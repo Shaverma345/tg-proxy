@@ -49,8 +49,16 @@ app.get("/send", async (req, res) => {
     }
 });
 
+
+// Тестовый маршрут
+app.get("/test", (req, res) => {
+    res.send("OK");
+});
+
+
 // === Старт сервера ===
 app.listen(PORT, () => {
     console.log("TG Proxy started on port " + PORT);
 });
+
 

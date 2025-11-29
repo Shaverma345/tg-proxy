@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: tg-proxy
+    env: docker
+    plan: free
+    dockerfilePath: Dockerfile
+    startCommand: "php -S 0.0.0.0:10000 -t /var/www/html"

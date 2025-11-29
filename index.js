@@ -4,34 +4,44 @@ import fetch from "node-fetch";
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// === Настройки ===
-const TELEGRAM_TOKEN = "8594017134:AAErZWjCCpVECDe1GjM427M4f_ZMkdTMxWM";
-const CHAT_ID = "1252968307";
-const SECURE_KEY = "EBANAYA_SECURE_KEY_123456"; // твой ключ
+// === ТЕСТОВЫЙ РОУТ ===
+// Чтобы проверить, что сервер жив
+app.get("/test", (req, res) => {
+    res.send("OK");
+});
 
-// CORS (разрешаем всем)
+// === Настройки ===
+const TELEGRAM_TOKEN = "8594017134:AAErZWjCCpVECDe1GjM427M4f_ZMkdTMxWM"; // твой бот
+const CHAT_ID = "1252968307";                                            // твой chat_id
+const SECURE_KEY = "EBANAYA_SECURE_KEY_123456";                          // твой ключ
+
+// Разрешаем CORS
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     next();
 });
 
 // === GET-прокси ===
+// Пример вызова:
+// https://tg-proxy-akpz.onrender.com/send?key=EBANAYA_SECURE_KEY_123456&msg=Привет
 app.get("/send", async (req, res) => {
     const key = req.query.key;
     const msg = req.query.msg;
 
+    // Проверка ключа
     if (!key || key !== SECURE_KEY) {
         return res.json({ error: "Invalid key" });
     }
 
+    // Проверка текста
     if (!msg) {
         return res.json({ error: "Message is empty" });
     }
 
-    const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+    const tgUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
 
     try {
-        const r = await fetch(url, {
+        const tgResponse = await fetch(tgUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -41,7 +51,7 @@ app.get("/send", async (req, res) => {
             })
         });
 
-        const data = await r.json();
+        const data = await tgResponse.json();
         res.json(data);
 
     } catch (e) {
@@ -49,16 +59,7 @@ app.get("/send", async (req, res) => {
     }
 });
 
-
-// Тестовый маршрут
-app.get("/test", (req, res) => {
-    res.send("OK");
-});
-
-
-// === Старт сервера ===
+// === Запуск сервера ===
 app.listen(PORT, () => {
     console.log("TG Proxy started on port " + PORT);
 });
-
-

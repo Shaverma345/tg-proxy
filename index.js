@@ -5,8 +5,8 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 
 // === Настройки ===
-const TELEGRAM_TOKEN = "ТВОЙ_ТГ_ТОКЕН";
-const CHAT_ID = "ТВОЙ_CHAT_ID";
+const TELEGRAM_TOKEN = "8594017134:AAErZWjCCpVECDe1GjM427M4f_ZMkdTMxWM";
+const CHAT_ID = "1252968307";
 const SECURE_KEY = "EBANAYA_SECURE_KEY_123456"; // твой ключ
 
 // CORS (разрешаем всем)
@@ -53,3 +53,4 @@ app.get("/send", async (req, res) => {
 app.listen(PORT, () => {
     console.log("TG Proxy started on port " + PORT);
 });
+

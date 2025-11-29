@@ -1,6 +1,9 @@
 services:
   - type: web
     name: tg-proxy
-    env: docker
+    env: node
+    region: oregon
     plan: free
-    dockerfilePath: Dockerfile
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    autoDeploy: true

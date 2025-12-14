@@ -63,3 +63,74 @@ app.get("/send", async (req, res) => {
 app.listen(PORT, () => {
     console.log("TG Proxy started on port " + PORT);
 });
+
+const text = `
+🛒 *Новый заказ №${order.id}*
+
+👤 ${order.name}
+📞 ${order.phone}
+📍 ${order.address}
+
+💰 *${order.total} грн*
+🕒 ${order.created_at}
+`;
+
+const keyboard = {
+  inline_keyboard: [
+    [
+      { text: "🟡 Принят", callback_data: `status:new:${order.id}` },
+      { text: "🔵 В обработке", callback_data: `status:processing:${order.id}` }
+    ],
+    [
+      { text: "🚚 Отправлен", callback_data: `status:shipped:${order.id}` },
+      { text: "❌ Отменён", callback_data: `status:canceled:${order.id}` }
+    ],
+    [
+      {
+        text: "🔍 Открыть заказ",
+        url: `https://egyptpharmacy.gt.tc/shop/admin/order.php?id=${order.id}`
+      }
+    ]
+  ]
+};
+
+await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    chat_id: process.env.CHAT_ID,
+    text,
+    parse_mode: "Markdown",
+    reply_markup: keyboard
+  })
+});
+app.post("/telegram", async (req, res) => {
+  const cb = req.body.callback_query;
+  if (!cb) return res.sendStatus(200);
+
+  const [_, status, orderId] = cb.data.split(":");
+
+  // 🔐 защита: только ты
+  if (cb.from.id.toString() !== process.env.ADMIN_TG_ID) {
+    return res.sendStatus(403);
+  }
+
+  // 1️⃣ обновляем статус в БД
+  await fetch(process.env.SITE_URL + "/shop/api/update_status.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ order_id: orderId, status })
+  });
+
+  // 2️⃣ ответ Telegram
+  await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/answerCallbackQuery`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      callback_query_id: cb.id,
+      text: "Статус обновлён"
+    })
+  });
+
+  res.sendStatus(200);
+});
